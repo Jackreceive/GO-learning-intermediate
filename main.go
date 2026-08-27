@@ -1,28 +1,44 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
+	"sync"
 )
 
-func validateAge(s string) (int, error) {
-	if n, err := strconv.Atoi(s); err != nil {
-		return 0, errors.New("parse: strconv.Atoi: parsing \"" + s + "\": invalid syntax")
-	} else if n < 0 {
-		return 0, errors.New("negative")
-	} else {
-		return n, nil
+var ans, N int
+var mutex sync.Mutex
+var num []int
+var wg sync.WaitGroup
+
+func goroutine(a int) {
+	defer wg.Done()
+	res := 0
+	i := N / 4 * a
+	for ; i < N/4*(a+1); i++ {
+		res += num[i]
 	}
+	if a == 3 {
+		for ; i < N; i++ {
+			res += num[i]
+		}
+	}
+	mutex.Lock()
+	ans += res
+	mutex.Unlock()
+
 }
 
 func main() {
-	var s string
-	fmt.Scan(&s)
-	n, err := validateAge(s)
-	if err == nil {
-		fmt.Println("age:", n)
-	} else {
-		fmt.Println("error:", err)
+	fmt.Scan(&N)
+	for i := 0; i < N; i++ {
+		t := 0
+		fmt.Scan(&t)
+		num = append(num, t)
 	}
+	for i := 0; i < 4; i++ {
+		wg.Add(1)
+		go goroutine(i)
+	}
+	wg.Wait()
+	fmt.Println(ans)
 }
