@@ -1,37 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strconv"
+)
 
-type shape interface {
-	Area() float64
-}
-
-type Circle struct {
-	Radius float64
-}
-
-type Square struct {
-	Side float64
-}
-
-func (c Circle) Area() float64 {
-	return c.Radius * c.Radius * 3.14
-}
-
-func (s Square) Area() float64 {
-	return s.Side * s.Side
+func validateAge(s string) (int, error) {
+	if n, err := strconv.Atoi(s); err != nil {
+		return 0, errors.New("parse: strconv.Atoi: parsing \"" + s + "\": invalid syntax")
+	} else if n < 0 {
+		return 0, errors.New("negative")
+	} else {
+		return n, nil
+	}
 }
 
 func main() {
 	var s string
-	var n float64
-	fmt.Scan(&s, &n)
-	if s == "square" {
-		t := Square{n}
-		fmt.Printf("%.2f", t.Area())
-		return
+	fmt.Scan(&s)
+	n, err := validateAge(s)
+	if err == nil {
+		fmt.Println("age:", n)
+	} else {
+		fmt.Println("error:", err)
 	}
-	t := Circle{n}
-	fmt.Printf("%.2f", t.Area())
-
 }
