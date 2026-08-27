@@ -1,44 +1,40 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"sync"
+	"os"
+	"strconv"
+	"strings"
 )
 
-var ans, N int
-var mutex sync.Mutex
-var num []int
-var wg sync.WaitGroup
-
-func goroutine(a int) {
-	defer wg.Done()
-	res := 0
-	i := N / 4 * a
-	for ; i < N/4*(a+1); i++ {
-		res += num[i]
-	}
-	if a == 3 {
-		for ; i < N; i++ {
-			res += num[i]
-		}
-	}
-	mutex.Lock()
-	ans += res
-	mutex.Unlock()
-
-}
-
 func main() {
-	fmt.Scan(&N)
-	for i := 0; i < N; i++ {
-		t := 0
-		fmt.Scan(&t)
-		num = append(num, t)
+	r := bufio.NewScanner(os.Stdin)
+	r.Scan()
+	a := make(chan int)
+	b := make(chan int)
+	fields := strings.Fields(r.Text())
+	var num []int
+	for _, s := range fields {
+		n, _ := strconv.Atoi(s)
+		num = append(num, n)
 	}
-	for i := 0; i < 4; i++ {
-		wg.Add(1)
-		go goroutine(i)
+	go func() {
+		defer close(a)
+		for i := 0; i < len(num); i++ {
+			a <- num[i]
+		}
+	}()
+	go func() {
+		defer close(b)
+		for i := range a {
+			b <- i * i
+		}
+	}()
+	ans := 0
+	for i := range b {
+		ans += i
 	}
-	wg.Wait()
 	fmt.Println(ans)
+
 }
