@@ -2,31 +2,23 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"time"
 )
 
-type Logger struct {
-}
-
-func (l Logger) Log(msg string) {
-	fmt.Println("[log]", msg)
-}
-
-type Counter struct {
-	Logger
-	count int
-}
-
-func (c *Counter) Inc() {
-	c.Log(strconv.Itoa(c.count))
-	c.count = c.count + 1
-}
-
 func main() {
-	n := 0
-	fmt.Scan(&n)
-	c := Counter{Logger: Logger{}, count: 1}
-	for i := 0; i < n; i++ {
-		c.Inc()
+	a := make(chan string, 2)
+	go func() {
+		time.Sleep(30 * time.Millisecond)
+		a <- "slow"
+	}()
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		a <- "fast"
+	}()
+	select {
+	case t := <-a:
+		fmt.Println(t)
+	case <-time.After(100 * time.Millisecond):
+		fmt.Println("timeout")
 	}
 }
