@@ -1,45 +1,32 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
-	"strings"
 )
 
-type Stack struct {
-	num []int
+type Logger struct {
 }
 
-func (s *Stack) push(a int) {
-	s.num = append(s.num, a)
+func (l Logger) Log(msg string) {
+	fmt.Println("[log]", msg)
 }
 
-func (s *Stack) pop() (int, bool) {
-	if len(s.num) <= 0 {
-		return 0, false
-	}
-	x := s.num[len(s.num)-1]
-	s.num = s.num[:len(s.num)-1]
-	return x, true
+type Counter struct {
+	Logger
+	count int
+}
+
+func (c *Counter) Inc() {
+	c.Log(strconv.Itoa(c.count))
+	c.count = c.count + 1
 }
 
 func main() {
-	r := bufio.NewScanner(os.Stdin)
-	r.Scan()
-	field := strings.Fields(r.Text())
-	var s Stack
-	for _, v := range field {
-		t, _ := strconv.Atoi(v)
-		s.push(t)
+	n := 0
+	fmt.Scan(&n)
+	c := Counter{Logger: Logger{}, count: 1}
+	for i := 0; i < n; i++ {
+		c.Inc()
 	}
-	for {
-		n, b := s.pop()
-		if b == false {
-			break
-		}
-		fmt.Println(n)
-	}
-
 }
