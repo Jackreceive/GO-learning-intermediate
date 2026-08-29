@@ -5,26 +5,41 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
-func cal(a int, b int) (x int, err error) {
-	defer func() {
-		if t := recover(); t != nil {
-			err = fmt.Errorf("divide by zero")
-		}
-	}()
-	return a / b, nil
+type Stack struct {
+	num []int
+}
+
+func (s *Stack) push(a int) {
+	s.num = append(s.num, a)
+}
+
+func (s *Stack) pop() (int, bool) {
+	if len(s.num) <= 0 {
+		return 0, false
+	}
+	x := s.num[len(s.num)-1]
+	s.num = s.num[:len(s.num)-1]
+	return x, true
 }
 
 func main() {
 	r := bufio.NewScanner(os.Stdin)
 	r.Scan()
-	m, _ := strconv.Atoi(r.Text())
-	r.Scan()
-	n, _ := strconv.Atoi(r.Text())
-	if ans, err := cal(m, n); err != nil {
-		fmt.Println("error:", err)
-	} else {
-		fmt.Println("result:", ans)
+	field := strings.Fields(r.Text())
+	var s Stack
+	for _, v := range field {
+		t, _ := strconv.Atoi(v)
+		s.push(t)
 	}
+	for {
+		n, b := s.pop()
+		if b == false {
+			break
+		}
+		fmt.Println(n)
+	}
+
 }
