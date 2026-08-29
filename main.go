@@ -2,23 +2,58 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"sync"
 )
 
 func main() {
-	a := make(chan string, 2)
-	go func() {
-		time.Sleep(30 * time.Millisecond)
-		a <- "slow"
-	}()
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		a <- "fast"
-	}()
-	select {
-	case t := <-a:
-		fmt.Println(t)
-	case <-time.After(100 * time.Millisecond):
-		fmt.Println("timeout")
+	n := 0
+	fmt.Scan(&n)
+	num := []int{}
+	for i := 0; i < n; i++ {
+		t := 0
+		fmt.Scan(&t)
+		num = append(num, t)
 	}
+	each := n / 4
+	total := 0
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for c := 0; c < each; c++ {
+			mu.Lock()
+			total += num[c]
+			mu.Unlock()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for c := each; c < each*2; c++ {
+			mu.Lock()
+			total += num[c]
+			mu.Unlock()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for c := each * 2; c < each*3; c++ {
+			mu.Lock()
+			total += num[c]
+			mu.Unlock()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for c := each * 3; c < n; c++ {
+			mu.Lock()
+			total += num[c]
+			mu.Unlock()
+		}
+	}()
+	wg.Wait()
+	fmt.Println(total)
 }
